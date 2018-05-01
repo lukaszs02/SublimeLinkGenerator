@@ -1,0 +1,7 @@
+[
+{
+    "id" : "GenerateLink",
+    "caption": "Generate Link",
+    "command" : "generatelink"
+}
+]
