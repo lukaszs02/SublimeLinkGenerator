@@ -1,4 +1,5 @@
 {
     "url": "https://github.com/lukaszs02/",
-    "lineNumberSeparator": ":"
+    "lineNumberSeparator": "#L",
+    "branch": "master"
 }

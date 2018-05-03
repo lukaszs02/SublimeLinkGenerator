@@ -6,18 +6,35 @@ import sublime_plugin
 
 class GeneratelinkCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        settings = sublime.load_settings('LinkGenerator.sublime-settings')
-        link = settings.get("url") + self.file_path() + settings.get("lineNumberSeparator") + str(self.current_line())
+        link = self.generateLink()
         print(link)
-        self.copy_link_to_clipboard(link)
+        self.copyLinkToClipboard(link)
 
-    def current_line(self):
+    def generateLink(self):
+        settings = sublime.load_settings('LinkGenerator.sublime-settings')
+        if(re.search("gitlab|github", settings.get("url"))):
+            link = settings.get("url") + self.projectName() + "/blob/" + self.getBranch(settings) + self.filePath() + settings.get("lineNumberSeparator") + str(self.currentLine())
+        else:
+            link = settings.get("url") + self.projectName() + self.filePath() + settings.get("lineNumberSeparator") + str(self.currentLine())
+        return link
+
+    def currentLine(self):
         return (self.view.rowcol(self.view.sel()[0].begin())[0]) + 1
 
-    def file_path(self):
+    def projectName(self):
+         projectName = re.search("[^/]*$", str(self.view.window().extract_variables()['folder'])).group(0)
+         return projectName
+
+    def filePath(self):
         project_folder = re.search("[^/]*$", str(self.view.window().extract_variables()['folder'])).group(0)
-        file_patch = re.search(project_folder + "/.*[^/]*$", str(self.view.window().extract_variables()['file'])).group(0)
+        file_patch = re.search("(?:" + project_folder + ")(.*$)", str(self.view.window().extract_variables()['file'])).group(1)
         return file_patch
 
-    def copy_link_to_clipboard(self, txt):
-        os.system("echo '%s' | pbcopy" % txt)
+    def getBranch(self, settings):
+        branch = settings.get("branch", "master")
+        if(branch == "_auto"):
+            branch = "master" #TODO add geting current branch form repository
+        return branch
+
+    def copyLinkToClipboard(self, txt):
+        os.system("echo '%s' | pbcopy" % txt) #TODO add support for windows
